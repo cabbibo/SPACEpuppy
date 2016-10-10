@@ -31,13 +31,16 @@ function loadImage(url){
   G.loading.neededToLoad ++;
   var r = THREE.RepeatWrapping;
 
-  var t = THREE.ImageUtils.loadTexture(url, r , onLoad, onError);
+  var t = G.imageLoader.load(url, onLoad, function(){}, onError);
   t.wrapT = t.wrapS = THREE.RepeatWrapping;
   return t;
 
 }
 
 function loadImages(){
+
+  G.imageLoader = new THREE.TextureLoader();
+
 
   G.textures = {};
 
