@@ -63,7 +63,7 @@
     }
 
     #loadbar{
-      height:30px;
+      height:60px;
       position:absolute;
       background:#fff;
     }
@@ -76,16 +76,21 @@
       position:absolute;
       text-align: center;
       padding:10px;
+      top:5px;
+      background: #000;
+      //position: fixed;
     }
 
     #startButton:hover{
       background:#fff;
       color:#000;
+      border:1px solid black;
+
     }
 
     #loaderHolder{
       width:100%;
-      height:30px;
+      height:60px;
       left:-3px;
       position:absolute;
       border:3px solid white;
@@ -325,7 +330,7 @@ var loadDiv = document.getElementById( "loadbar");
 
 compressor.threshold.value = -50;
 compressor.knee.value = 40;
-compressor.ratio.value = 1200;
+compressor.ratio.value = 20;
 compressor.reduction.value = -10;
 compressor.attack.value = 0;
 compressor.release.value = 0.25;
@@ -386,7 +391,7 @@ compressor.release.value = 0.25;
       stats.domElement.style.zIndex = "999";
       //document.body.appendChild( stats.domElement );
 
-console.log( G );
+      //console.log( G );
 
       var gain     = audio.ctx.createGain();
       gain.connect( audio.gain );
@@ -403,7 +408,7 @@ console.log( G );
 
       for( var i = 0; i < PAGES.length; i++ ){
 
-        console.log( pages );
+       // console.log( pages );
         var p = new Page( i , PAGES[i] );
         pages.push( p );
 
@@ -421,6 +426,12 @@ console.log( G );
       renderUniforms.lightPos.value = light.position;
       scene.add( light );
 
+
+      var geo = new THREE.IcosahedronGeometry( 1. , 2 );
+      var mat = new THREE.MeshNormalMaterial();
+      var m = new THREE.Mesh( geo , mat );
+      m.position.z = -4;
+      //scene.add( m );
 
 
 
@@ -760,19 +771,10 @@ console.log( G );
 
 function resize(){
 
-  var w = window.innerWidth;
-  var h = window.innerHeight;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
 
-
-  var ratio = this.w / this.h;
-
- 
-  // To try and keep everything neccesary on screen
-  camera.aspect = ratio;
-  camera.fov    = 60 / Math.pow(ratio,.7);   
-  camera.updateProjectionMatrix();
-
-  renderer.setSize( w , h);
+    renderer.setSize( window.innerWidth, window.innerHeight );
 
 
 }

@@ -60,8 +60,8 @@
       var opalWidth = height;
       var opalHeight = depth;
       var opalDepth = Math.floor( numPerOpal / ( opalWidth * opalHeight ));
-      console.log( "OPAS");
-      console.log( opalDepth );
+      //console.log( "OPAS");
+      //console.log( opalDepth );
 
       for( var i =0; i < data.length; i+=4 ){
 
@@ -111,8 +111,8 @@
       var opalWidth = height;
       var opalHeight = depth;
       var opalDepth = Math.floor( numPerOpal / ( opalWidth * opalHeight ));
-      console.log( "OPAS");
-      console.log( opalDepth );
+      //console.log( "OPAS");
+      //console.log( opalDepth );
 
       for( var i =0; i < data.length; i+=4 ){
 
@@ -149,8 +149,8 @@
       var opalWidth = height;
       var opalHeight = depth;
       var opalDepth = Math.floor( numPerOpal / ( opalWidth * opalHeight ));
-      console.log( "OPAS");
-      console.log( opalDepth );
+      //console.log( "OPAS");
+      //console.log( opalDepth );
 
       var color = new THREE.Color();
 

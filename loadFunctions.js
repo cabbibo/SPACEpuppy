@@ -141,7 +141,7 @@ function onLoad(){
 
   G.loading.loaded ++;
 
-  console.log( G.loading );
+  //console.log( G.loading );
 
 
   if( G.loading.loaded == G.loading.neededToLoad ){

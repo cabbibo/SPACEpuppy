@@ -81,20 +81,20 @@ PhysicsRenderer.prototype.createDebugScene= function(){
   var geo = new THREE.PlaneBufferGeometry( 100 , 100 );
     
   var debugMesh = new THREE.Mesh( geo , new THREE.MeshBasicMaterial({
-    map: this.rt_1
+    map: this.rt_1.texture
   }));
   debugMesh.position.set( -105 , 0 , 0 );
 
   debugScene.add( debugMesh );
       
   var debugMesh = new THREE.Mesh( geo , new THREE.MeshBasicMaterial({
-    map: this.rt_2
+    map: this.rt_2.texture
   }));
   debugMesh.position.set( 0 , 0 , 0 );
   debugScene.add( debugMesh );
 
   var debugMesh = new THREE.Mesh( geo , new THREE.MeshBasicMaterial({
-    map: this.rt_3
+    map: this.rt_3.texture
   }));
   debugMesh.position.set( 105, 0 , 0 );
   debugScene.add( debugMesh );
@@ -174,37 +174,37 @@ PhysicsRenderer.prototype.update = function(){
   
   if( flipFlop == 0 ){
 
-    this.simulation.uniforms.t_oPos.value = this.rt_1;
-    this.simulation.uniforms.t_pos.value = this.rt_2;
+    this.simulation.uniforms.t_oPos.value = this.rt_1.texture;
+    this.simulation.uniforms.t_pos.value = this.rt_2.texture;
 
-    this.pass( this.simulation, this.rt_3 );
+    this.pass( this.simulation, this.rt_3);
 
-    this.ooOutput = this.rt_1;
-    this.oOutput = this.rt_2;
-    this.output = this.rt_3;
+    this.ooOutput = this.rt_1.texture;
+    this.oOutput = this.rt_2.texture;
+    this.output = this.rt_3.texture;
 
   }else if( flipFlop == 1 ){
     
-    this.simulation.uniforms.t_oPos.value = this.rt_2;
-    this.simulation.uniforms.t_pos.value = this.rt_3;
+    this.simulation.uniforms.t_oPos.value = this.rt_2.texture;
+    this.simulation.uniforms.t_pos.value = this.rt_3.texture;
 
     this.pass( this.simulation , this.rt_1 );
 
-    this.ooOutput = this.rt_2;
-    this.oOutput = this.rt_3;
-    this.output = this.rt_1;
+    this.ooOutput = this.rt_2.texture;
+    this.oOutput = this.rt_3.texture;
+    this.output = this.rt_1.texture;
 
 
   }else if( flipFlop == 2 ){
 
-    this.simulation.uniforms.t_oPos.value = this.rt_3;
-    this.simulation.uniforms.t_pos.value = this.rt_1;
+    this.simulation.uniforms.t_oPos.value = this.rt_3.texture;
+    this.simulation.uniforms.t_pos.value = this.rt_1.texture;
 
     this.pass( this.simulation , this.rt_2 );
 
-    this.ooOutput = this.rt_3;
-    this.oOutput = this.rt_1;
-    this.output = this.rt_2;
+    this.ooOutput = this.rt_3.texture;
+    this.oOutput = this.rt_1.texture;
+    this.output = this.rt_2.texture;
       
   }
 
@@ -254,8 +254,8 @@ PhysicsRenderer.prototype.setUniform = function( name , u ){
 // resets the render targets to the from position
 PhysicsRenderer.prototype.reset = function( texture ){
 
-  this.texture = texture;
-  this.texturePassProgram.uniforms.texture.value = texture;
+  this.texture = texture.texture;
+  this.texturePassProgram.uniforms.texture.value = texture.texture;
   
   this.pass( this.texturePassProgram , this.rt_1 );
   this.pass( this.texturePassProgram , this.rt_2 );

@@ -94,17 +94,17 @@ Page.prototype.fillUniforms = function( uniformType ){
       if( defaults[propt].type == "f" ){
 
         if( this[uniformType][propt] != null ){
-          console.log("alreadymade")
-          console.log( uniformType );
-          console.log( propt );
+          //console.log("alreadymade")
+          //console.log( uniformType );
+          //console.log( propt );
          
          // u[propt] = this[uniformType][propt]
         }else{
           if( propt !== "time" && propt !== "dT"){
 
-            console.log("get from defaults made")
-            console.log( uniformType );
-            console.log( propt );
+            //console.log("get from defaults made")
+            //console.log( uniformType );
+            //console.log( propt );
             this[uniformType][propt] = defaults[propt].value;
           }
         }
@@ -142,9 +142,9 @@ Page.prototype.start = function(){
 
   this.currentCameraPos = camera.position.clone();
   this.currentCameraTarget = target.clone();
-  console.log( "CC");
-  console.log( this.currentCameraPos );
-  console.log( this.cameraPosition );
+ // console.log( "CC");
+ // console.log( this.currentCameraPos );
+ // console.log( this.cameraPosition );
 
   var tween = new TWEEN.Tween( this.currentCameraPos ).to( this.cameraPosition , this.pageTurnTime );
 
