@@ -1,0 +1,822 @@
+<html>
+<head>
+
+  <style>
+   @font-face {
+      font-family: "GeoSans";
+      src: url("assests/GeosansLight.ttf");
+    }
+    html{ color:#fff; background:#000; font-family:"GeoSans" ; }
+    body{
+      font-size:30px;
+    }
+    a{
+      color: #fff;
+    }
+    a:hover{
+      color: #fff;
+      font-weight:bold;
+    }
+    a:visited{
+      color:#fff;
+    }
+
+    #renderer{
+      position:fixed;
+      top:0px;
+      left:0px;
+    }
+
+    #title{
+      color:#fff;
+      font-size: 100px;
+      right:30px;
+      bottom:30px;
+      position:absolute;
+
+      z-index: 99;
+    }
+
+    .navNode{
+      width: 30px;
+      height: 30px;
+      //position: absolute;
+      border: 1px solid #fff;
+      float: left;
+      margin: 10px;
+      background-color:rgba(0,0,0,.2);
+    }
+
+   
+
+    #navbar{
+      position:absolute;
+      z-index: 99;
+      width:100%;
+      //background: #011;
+
+    }
+
+    #duringLoad{
+      position:absolute;
+      z-index: 99;
+    }
+
+    #loadbar{
+      height:30px;
+      position:absolute;
+      background:#fff;
+    }
+
+    #startButton{
+      border:1px solid white;
+      visibility: hidden;
+      width:20%;
+      left:40%;
+      position:absolute;
+      text-align: center;
+      padding:10px;
+    }
+
+    #startButton:hover{
+      background:#fff;
+      color:#000;
+    }
+
+    #loaderHolder{
+      width:100%;
+      height:30px;
+      left:-3px;
+      position:absolute;
+      border:3px solid white;
+    }
+
+    #description{
+      padding:10%;
+    }
+
+
+  
+  </style>
+
+</head>
+<body style="margin:0px">
+<div id="duringLoad">
+  <div id="loaderHolder"><div id="loadbar"></div></div>
+  <div id="description">
+    <p>
+    Hey!<br/>
+    So this is a talk I gave at <a target="_blank" href="http://nextart.tech/"> Next Art Night </a> which is a parsed down version of one that I originally presented at Pixar.
+    <br/><br/>
+    I've been trying to think of how exactly to be taking these interactive speeches, and putting them up for others to experience. 
+    I don't know how well it works, but I would love to hear what you think of it. Hit me up on <a target="_blank" href="http://twitter.com/cabbibo">twitter : @cabbibo </a> or <a target="_blank" href="mailto:hello@cabbi.bo">email me: hello@cabbi.bo</a>
+    <br/>
+    Runtime: 15 min
+    <br/><br/>
+    - Isaac
+
+    </p>
+
+  </div>
+  <div id="startButton" onclick="beginItAll()">START</div>
+</div>
+<div id="title"></div>
+
+<script src="lib/three.min.js"></script>
+<script src="lib/jquery.min.js"></script>
+<script src="lib/stats.min.js"></script>
+<script src="lib/underscore.js"></script>
+<script src="lib/TrackballControls.js"></script>
+<script src="lib/ShaderLoader.js"></script>
+<script src="lib/Tween.js"></script>
+<script src="lib/noise.js"></script>
+
+<script src="lib/AudioController.js"></script>
+<script src="lib/BufferedAudio.js"></script>
+<script src="lib/AudioBuffer.js"></script>
+<script src="lib/UserAudio.js"></script>
+<script src="lib/Stream.js"></script>
+
+<script>
+
+var SIZE = 256;
+var pages = [];
+
+var tv1 = new THREE.Vector3();
+var tv2 = new THREE.Vector3();
+
+  G = {
+
+    loading:{
+
+      loaded:0,
+      neededToLoad:0
+
+    },
+
+
+  };
+
+mouseVal = {
+  x:0,
+  y:0,
+}
+
+tMouseVal = {
+  x:0,
+  y:0,
+}
+
+var mouse = new THREE.Vector2(1000000 , 10000000);
+var raycaster = new THREE.Raycaster();
+var cameraTemp  = new THREE.Vector3();
+var turning  = false;
+
+var loadDiv = document.getElementById( "loadbar");
+
+</script>
+
+<script src="PhysicsRenderer.js"></script>
+<script src="createLookupGeometry.js"></script>
+<script src="make.js"></script>
+<script src="Page.js"></script>
+<script src="PAGES.js"></script>
+<script src="loadFunctions.js"></script>
+
+
+<script>
+
+/*
+  TODO:
+  tetrahedrons
+  test changing material
+  tween system
+
+
+*/
+
+
+  TWEEN.origTween = TWEEN.Tween;
+  TWEEN.Tween = function (options){
+    var res = new TWEEN.origTween(options);
+    res.easing(TWEEN.Easing.Quadratic.InOut);
+    return res;
+  };
+
+
+
+  var scene , target, camera , renderer, clock , controls;
+
+  var target = new THREE.Vector3();
+  //var SIZE = 256;
+  var simulation;
+
+  var currentPage = 0;
+
+  var T_TARGET = { type:"t", value: null};
+  var T_TARGET2 = { type:"t", value: null};
+  var T_TARGETCOL = { type:"t", value: null};
+  var T_AUDIO = {type:"t", value:null};
+  var REPELERS = {type:"v3v", value:[]};
+
+  var simulationUniforms = {
+  
+    dT:{ type:"f" , value: 0 },
+    time:{type:"f", value:0},
+    noiseSize: { type:"f" , value: .1 },
+    audioDisplacement: { type:"f", value: 0},
+    dampening: { type:"f", value: 0},
+    dispersion: { type:"f", value: 0},
+    toTargetForce: { type:"f", value: 1},
+    audioRadius:{type:"f",value:0},
+    audioPower:{type:"f",value:0},
+    curlNoiseSize:{ type:"f", value:0},
+    t_target :T_TARGET,
+    t_target2 :T_TARGET2,
+    t_targetCol:T_TARGETCOL,
+    t_audio:T_AUDIO,
+    repelers:REPELERS,
+    mousePos:{type:"v3",value:new THREE.Vector3()},
+    cameraPos:{type:"v3",value:new THREE.Vector3()},
+    mouseRepel:{type:"f",value:0},
+    mouseRepelRadius:{type:"f",value:0},
+
+    movementSpeed:{type:"f",value:0},
+    movementSize:{type:"f",value:0},
+
+  }
+
+  var rotationSimUniforms = {
+    dT: simulationUniforms.dT,
+    time: simulationUniforms.time,
+    toTargetAxis:{ type:"f", value:0},
+    toTargetAngle:{ type:"f", value:0},
+    toVelocity:{ type:"f", value:0},
+    t_fromSim1:{ type:"t" , value: null },
+    t_fromSim2:{ type:"t" , value: null },
+    t_target :T_TARGET,
+    t_target2 :T_TARGET2,
+    t_audio:T_AUDIO,
+    speed :{ type:"f" , value: 0},
+  }
+
+
+  var renderUniforms = {
+
+    t_pos:{ type:"t" , value: null },
+    t_oPos:{ type:"t" , value: null },
+    t_rot:{ type:"t" , value: null },
+
+    t_sem:{type:"t",value:null},
+    
+    audioValue: { type:"f", value: 0},
+    rainbowValue: { type:"f", value: 0},
+    colorValue: { type:"f", value: 0},
+    brightness:{type:"f",value:0},
+
+    biggerFartherAddition:{type:"f",value:0},
+    audioDisplacement:{type:"f",value:0},
+    baseSize:{type:"f",value:0},
+    simulationSize:{type:"f",value:1},
+    targetSize:{type:"f",value:0},
+    audioSize:{type:"f",value:0},
+
+
+    velocityColorAmount : {type:"f",value:0},
+    audioColorAmount : {type:"f",value:0},
+    reflectColorAmount : {type:"f",value:0},
+    normalColorAmount : {type:"f",value:0},
+    individualColorAmount : {type:"f",value:0},
+    individualAudioAmount : {type:"f",value:0},
+    matchHueAmount : {type:"f",value:0},
+    hueUVValue: {type:"f",value:0},
+    hueUVSize: {type:"f",value:0},
+
+    normalMapSize : {type:"f",value:.1},
+    normalMapDepth : {type:"f",value:1},
+    semAmount:{type:"f",value:0},
+
+
+
+
+    t_target : T_TARGET,
+    t_target2 : T_TARGET2,
+    t_targetCol : T_TARGETCOL,
+    t_audio:T_AUDIO,
+
+    t_normal : { type: "t" , value : null },
+    lightPos : { type:"v3" , value:null},
+    repelers:REPELERS
+
+
+  }
+
+
+
+  var audio = new AudioController();
+  //audio.mute.gain.value = 0;
+
+  G.audio = audio;
+
+  //var userAudio = new UserAudio(audio.ctx , audio.gain ); 
+
+  var compressor = audio.ctx.createDynamicsCompressor();
+  compressor.connect(audio.gain);
+
+compressor.threshold.value = -50;
+compressor.knee.value = 40;
+compressor.ratio.value = 1200;
+compressor.reduction.value = -10;
+compressor.attack.value = 0;
+compressor.release.value = 0.25;
+
+  var stream = new Stream( "audio/love.mp3", audio.ctx , compressor );
+  //stream.play();
+
+  var shaders = new ShaderLoader( 'shaders' );
+
+
+  beginLoad();
+
+  var numRepelers = 20;
+  var repelers = [];
+
+  
+  function init(){
+
+      var url = document.URL;
+      var stringArray = url.split("#");
+      if( stringArray[1] ){ currentPage = stringArray[1]; }
+
+      T_AUDIO.value = audio.texture;
+
+      renderUniforms.t_normal.value = G.textures.normal;
+      renderUniforms.t_sem.value = G.textures.sem;
+
+      /*
+
+         Default threejs stuff!
+
+      */
+      scene = new THREE.Scene();
+
+      var ar = window.innerWidth / window.innerHeight;
+
+      camera = new THREE.PerspectiveCamera( 50, ar , .001, 10 );
+      camera.position.z = .025;
+
+    
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight , true );
+
+      renderer.domElement.id = "renderer"
+
+      renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+      document.body.appendChild( renderer.domElement );
+
+
+      controls = new THREE.TrackballControls( camera );
+      clock = new THREE.Clock();
+
+      stats = new Stats();
+      stats.domElement.style.position = "absolute";
+      stats.domElement.style.left = "0px";
+      stats.domElement.style.bottom = "-30px";
+      stats.domElement.style.zIndex = "999";
+      //document.body.appendChild( stats.domElement );
+
+console.log( G );
+
+      var gain     = audio.ctx.createGain();
+      gain.connect( audio.gain );
+      gain.gain.value = .2;
+
+      G.switchNote = new BufferedAudio( G.clickNoteBuffer.buffer , audio.ctx , gain );
+
+  
+      //G.switchNote.gain.value = .3;
+      G.wrongNote = new BufferedAudio( G.wrongNoteBuffer.buffer , audio.ctx , audio.gain );
+
+      // GONNA TAKE A WHILE
+      PAGES = MakePages();
+
+      for( var i = 0; i < PAGES.length; i++ ){
+
+        console.log( pages );
+        var p = new Page( i , PAGES[i] );
+        pages.push( p );
+
+      }
+
+     
+
+
+      var geo = new THREE.IcosahedronGeometry( 1. , 2 );
+      var mat = new THREE.MeshBasicMaterial({color: 0x010101 });
+      light = new THREE.Mesh( geo , mat );
+      light.position.x = .1;
+      light.position.y = .1;
+      light.position.z = -.1;
+      renderUniforms.lightPos.value = light.position;
+      scene.add( light );
+
+
+
+
+
+
+      for( var i = 0; i < numRepelers; i++ ){
+
+        r = new THREE.Mesh( geo , mat );
+
+        r.position.x = Math.random()  -.5;
+        r.position.y = Math.random()  -.5;
+        r.position.z = Math.random()  -.5;
+        r.position.normalize();
+        r.position.multiplyScalar( .6 );
+
+        REPELERS.value.push( r.position );
+
+        //scene.add( r );
+        repelers.push(r);
+      }
+
+
+
+
+      /*
+
+        SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION SETTING UP SIMULATION 
+
+      */
+
+      sim = shaders.setValue( shaders.ss.sim , 'SIZE' , numRepelers );
+
+      simulation  = new PhysicsRenderer( SIZE , sim   , renderer );
+      rotationSim = new PhysicsRenderer( SIZE , shaders.ss.simRot , renderer );
+
+
+      var geo = createLookupGeometry( SIZE );
+
+      var mat = new THREE.ShaderMaterial({
+        uniforms: renderUniforms,
+        /*attributes: { 
+            triPos: {type:"v3", value:null},
+            id:{type:"f",value:null}
+        },*/
+        vertexShader: shaders.vs.prism,
+        fragmentShader: shaders.fs.prism,
+        side: THREE.BackSide
+
+      });
+
+      simulation.setUniforms( simulationUniforms );
+      rotationSim.setUniforms( rotationSimUniforms );
+
+      var prism = new THREE.Mesh( geo , mat );
+      prism.frustumCulled = false;
+
+      scene.add( prism );
+
+
+      simulation.addBoundTexture( renderUniforms.t_pos , 'output' );
+      simulation.addBoundTexture( renderUniforms.t_oPos , 'oOutput' );
+      
+      simulation.addBoundTexture( rotationSimUniforms.t_fromSim1 , 'output' );
+      simulation.addBoundTexture( rotationSimUniforms.t_fromSim2 , 'oOutput' );
+
+      rotationSim.addBoundTexture( renderUniforms.t_rot , 'output' );
+
+
+     // size = 100;
+ 
+
+      simulation.reset( firstLookup );
+      rotationSim.reset( makeNormalizedTexture() );
+      //T_TARGET.value = makeRandomTexture( 10 );
+
+
+
+      
+
+
+      
+    window.addEventListener( 'keydown', keydown, false );
+    window.addEventListener( 'keyup', keyup, false );
+    window.addEventListener( 'mousemove', mousemove, false );
+    window.addEventListener( 'resize'   , resize , false );
+
+    var geo = new THREE.PlaneGeometry( 1 , 1 );
+    var mat = new THREE.MeshNormalMaterial({
+      side: THREE.DoubleSide
+    });
+
+    raycastPlane = new THREE.Mesh( geo , mat );
+
+  
+    addStartButton();
+
+  }
+
+  function animate(){
+
+    
+    TWEEN.update();
+   // console.log( camera.position );
+    cameraTemp.copy( camera.position );
+
+    var mSize = simulationUniforms.movementSize.value;
+    var mSpeed = simulationUniforms.movementSpeed.value;
+    //console.log( cp.movementSi);
+
+    mouseVal.x = (( tMouseVal.x * mSize - mouseVal.x ) * mSpeed ) + mouseVal.x;
+    mouseVal.y = (( tMouseVal.y * mSize - mouseVal.y ) * mSpeed ) + mouseVal.y;
+
+    tv2.set( mouseVal.x , mouseVal.y ,0 );
+    
+    // osscilate camera a lil bit
+    camera.position.add( tv2);
+    
+
+    camera.lookAt( target );
+
+    tv1.copy( target );
+    tv1.sub( camera.position );
+    tv1.normalize();
+    tv1.multiplyScalar( .0015 );
+    tv1.add( camera.position );
+
+    raycastPlane.position.copy( tv1 );// = camera.position.z - .0015;
+    raycastPlane.lookAt( camera.position  );
+ 
+    
+    // update the picking ray with the camera and mouse position  
+    raycaster.setFromCamera( mouse , camera );
+
+
+    light.position.copy( camera.position );
+    tv1.copy( raycaster.ray.direction );
+    tv1.multiplyScalar( .003 );
+    light.position.add( tv1);
+ 
+   // var intersect = raycaster.intersectObject( raycastPlane );
+   // console.log( intersect[0] );
+
+   // if( intersect[0] ){
+    // console.log( intersect[0] );
+      //if( raycaster.ray.direction.z != -1 ){ console.log(raycaster.ray.direction)}
+     simulationUniforms.mousePos.value.copy( light.position );
+     renderUniforms.lightPos.value.copy( light.position );
+     // light.position.copy( intersect[0].point );
+
+    //}
+
+    light.scale.set( 1 , 1, 1);
+    tv1.copy( camera.position );
+    tv1.sub( target );
+
+    light.scale.multiplyScalar( .00001 );
+
+    simulationUniforms.cameraPos.value.copy( camera.position );
+ 
+ 
+    simulationUniforms.dT.value = clock.getDelta();
+    simulationUniforms.time.value += simulationUniforms.dT.value;
+    simulation.update();
+    rotationSim.update();
+
+   // controls.update();
+    audio.update();
+
+
+    
+    renderer.render( scene , camera );
+    stats.update();
+
+
+    camera.position.copy( cameraTemp );
+
+
+
+    requestAnimationFrame( animate );
+
+  }
+
+  function turnToPage( pageNum ){
+
+    if( turning == false ){
+      pages[currentPage].navDiv.style.border = "1px solid #ccc"
+      G.switchNote.play();
+      pages[pageNum].start();
+      currentPage = pageNum;
+      pages[currentPage].navDiv.style.border = "5px solid white"
+    }else{
+      console.log( turning );
+      G.wrongNote.play();
+    }
+
+  }
+
+  function turnPage(){
+
+
+    if( turning == false ){
+      pages[currentPage].navDiv.style.border = "1px solid #ccc"
+      G.switchNote.play();
+      currentPage++;
+      pages[currentPage].navDiv.style.border = "5px solid white"
+      if( currentPage < pages.length ){
+        pages[currentPage].start();
+      }else{
+        currentPage = pages.length - 1;
+       }
+
+    }else{
+        G.wrongNote.play();
+      
+    }
+  }
+
+  function turnPageBack(){
+
+    if( turning == false ){
+      if( currentPage >= 0 ){
+        pages[currentPage].navDiv.style.border = "1px solid #ccc"
+        G.switchNote.play();
+        currentPage--;
+        pages[currentPage].navDiv.style.border = "5px solid white"
+        pages[currentPage].start();
+      }else{
+        G.wrongNote.play();
+      }
+        
+     
+      
+    }else{
+      G.wrongNote.play();
+    }
+  }
+
+  function keydown( e ){
+    //console.log( e );
+    //if( e.code = "ArrowRight" ){ turnPage(); }
+  }
+  function keyup( e ){
+    console.log( e );
+    /*if( e.code == "ArrowRight" ){ 
+      console.log('ss'); 
+      if( turning == false ){
+        turnPage(); 
+      }
+    }
+    if( e.code == "ArrowLeft" ){ turnPageBack(); }*/
+
+    if( e.code =="Space"){
+      turnPage();
+    }
+  }
+
+  function mousemove( e ){
+
+    tMouseVal.x = (e.clientX / window.innerWidth) - .5;
+    tMouseVal.y = (e.clientY / window.innerHeight) - .5;
+
+    mouse.x =   ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;   
+
+
+  }
+
+  function createNavBar(){
+
+    var divs = [];
+    var mainDiv = document.createElement("div");
+    mainDiv.id ="navbar";
+
+    navBar = mainDiv;
+
+
+    for( var i = 0; i < PAGES.length; i++ ){
+
+      divs[i] = document.createElement("div");
+      divs[i].id = "page" + i ;
+      divs[i].className = "navNode";
+      mainDiv.appendChild( divs[i] );
+      console.log("yo");
+
+      var val = i;
+
+      divs[i].style.cursor = 'pointer';
+      divs[i].onclick = function() {
+        console.log( this.pageNumber);
+
+        turnToPage( this.pageNumber);
+
+
+      };
+
+      divs[i].pageNumber = i;
+
+      divs[i].onmouseover = function(){
+        this.style.backgroundColor = "rgba(255,255,255,1)"
+      }
+      divs[i].onmouseout = function(){
+        this.style.backgroundColor = "rgba(0,0,0,.2)";
+      }
+
+      pages[i].navDiv = divs[i];
+
+    }
+
+    document.body.appendChild( mainDiv );
+
+
+  }
+
+
+
+  function beginItAll(){
+
+    //fullscreenIt();
+    removeLoadingStuff();
+    createNavBar();
+    animate();
+
+    G.switchNote.play();
+
+    pages[currentPage].navDiv.style.border = "5px solid white"
+    pages[currentPage].start();
+    document.getElementById("startButton").style.visibility = "hidden";
+  }
+
+  function removeLoadingStuff(){
+
+    document.getElementById("duringLoad").style.visibility = "hidden"
+    
+  }
+
+
+
+function resize(){
+
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+
+
+  var ratio = this.w / this.h;
+
+ 
+  // To try and keep everything neccesary on screen
+  camera.aspect = ratio;
+  camera.fov    = 60 / Math.pow(ratio,.7);   
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( w , h);
+
+
+}
+
+function addStartButton(){
+  document.getElementById("startButton").style.visibility = "visible";
+}
+
+function valueNavbar(){
+navbar.style.opacity ="1"
+}
+
+function devalueNavbar(){
+  navbar.style.opacity =".4"
+}
+
+
+
+
+function fullscreenIt(){
+
+  var element = document.body;
+
+  if(element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if(element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if(element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if(element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  }
+
+  resize();
+}
+
+
+
+</script>
+ 
+
+
+
+
+
+</body>
+<html>
