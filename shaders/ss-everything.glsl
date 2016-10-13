@@ -81,7 +81,7 @@ void main(){
 
   vec3 dif = pos.xyz - target.xyz;
 
-  if( length( dif) > .00000000001 ){
+  if( length( dif) > .0000001 ){
 
     // moving to original pos;
     force -= length( dif ) * length( dif ) * normalize( dif ) * toTargetForce;
@@ -101,7 +101,7 @@ void main(){
         map(pos.xyz+eps.yxy) - map(pos.xyz-eps.yxy),
         map(pos.xyz+eps.yyx) - map(pos.xyz-eps.yyx) );
 
-    if( length( nor )> .000000001 ){
+    if( length( nor )> .0000001 ){
       nor = normalize( nor );
       force += nor  * mouseRepel;
     }
@@ -119,7 +119,7 @@ void main(){
 
     vec3 dif = p - pos.xyz;
 
-    if( length( dif ) > .000000001 ){
+    if( length( dif ) > .0000001 ){
       if( length( dif ) < length( audioPow )  * audioRadius ){
         force += normalize(dif) * length( audioPow ) * audioPower;
       }
