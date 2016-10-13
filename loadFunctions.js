@@ -144,9 +144,6 @@ function onLoad(){
 
   G.loading.loaded ++;
 
-  //console.log( G.loading );
-
-
   if( G.loading.loaded == G.loading.neededToLoad ){
 
     finishedLoading();
