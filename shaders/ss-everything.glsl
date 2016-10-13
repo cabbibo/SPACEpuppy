@@ -81,11 +81,14 @@ void main(){
 
   vec3 dif = pos.xyz - target.xyz;
 
+  if( length( dif) > .000001 ){
 
-  // moving to original pos;
-  force -= length( dif ) * length( dif ) * normalize( dif ) * toTargetForce;
+    // moving to original pos;
+    force -= length( dif ) * length( dif ) * normalize( dif ) * toTargetForce;
 
-  force += curlNoise( pos.xyz * curlNoiseSize ) * dispersion;
+    force += curlNoise( pos.xyz * curlNoiseSize ) * dispersion;
+
+  }
 
   float distanceToCapsule = map( pos.xyz );
   if( distanceToCapsule < 0. ){
@@ -97,8 +100,11 @@ void main(){
         map(pos.xyz+eps.xyy) - map(pos.xyz-eps.xyy),
         map(pos.xyz+eps.yxy) - map(pos.xyz-eps.yxy),
         map(pos.xyz+eps.yyx) - map(pos.xyz-eps.yyx) );
-    nor = normalize( nor );
-    force += nor  * mouseRepel;
+
+    if( length( nor )> .0000001 ){
+      nor = normalize( nor );
+      force += nor  * mouseRepel;
+    }
 
 
 
@@ -113,8 +119,10 @@ void main(){
 
     vec3 dif = p - pos.xyz;
 
-    if( length( dif ) < length( audioPow )  * audioRadius ){
-      force += normalize(dif) * length( audioPow ) * audioPower;
+    if( length( dif ) > .0000001 ){
+      if( length( dif ) < length( audioPow )  * audioRadius ){
+        force += normalize(dif) * length( audioPow ) * audioPower;
+      }
     }
   }
 
@@ -127,6 +135,7 @@ void main(){
   if( length( vel ) >= 10.0 ){
     vel = normalize( vel )* 10.;
   }
+
   vel *= dampening;
   vel += force * dT;
 
