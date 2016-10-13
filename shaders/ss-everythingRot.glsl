@@ -52,7 +52,7 @@ void main(){
 
   vec3 axis = vec3( pos.xyz );
 
-  if( length( axis )> .000001 ){
+  if( length( axis )> .00000001 ){
     axis = normalize( axis );
   }else{
     axis = vec3( 0 , 1 , 0 );
@@ -60,7 +60,7 @@ void main(){
 
   axis = mix( axis.xyz , toRot.xyz , toTargetAxis );
 
-  if( length( simVel) > .0000001 ){
+  if( length( simVel) > .000000001 ){
     axis = mix( axis , normalize( simVel ) , toVelocity);
   }
 
