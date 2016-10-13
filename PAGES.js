@@ -58,6 +58,8 @@ var MakePages = function(){
                                     toTargetForce: 100,
                                     dampening: .6,
                                     dispersion: 0,
+                                    movementSpeed:.1,
+                                    movementSize:.1,
                                     audioDisplacement: 0,
                                    },
 
