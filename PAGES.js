@@ -79,7 +79,7 @@ var MakePages = function(){
                                     //semAmount:1
                                    },
 
-    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.02 ),
+    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.2 ),
     cameraTarget                 : new THREE.Vector3( 0 , 0 , 0 ),
 
 
@@ -104,9 +104,9 @@ var MakePages = function(){
                                    },
 
     targetRotationSimulationUniforms    : {
-                                    speed: 0,
+                                    speed: .3,
                                     toTargetAxis:1,
-                                    toTargetAngle:1,
+                                    toTargetAngle:0,
                                    },
 
     targetRenderUniforms         : {
@@ -119,7 +119,7 @@ var MakePages = function(){
 
                                    },
 
-    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.02 ),
+    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.2 ),
     cameraTarget                 : new THREE.Vector3( 0 , 0 , 0 ),
 
 
@@ -128,7 +128,7 @@ var MakePages = function(){
   {
 
     title                        : "SUN",
-    titleColor                   : "#000",
+    titleColor                   : "#fff",
 
     pageTurnTime                 : 1000,
 
@@ -144,7 +144,7 @@ var MakePages = function(){
                                    },
 
     targetRotationSimulationUniforms    : {
-                                    speed: 0,
+                                    speed: 1.6,
                                     toTargetAxis:1,
                                     toTargetAngle:0,
                                    },
@@ -156,7 +156,7 @@ var MakePages = function(){
                                     brightness:1
                                    },
 
-    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.02 ),
+    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.2),
     cameraTarget                 : new THREE.Vector3( 0 , 0 , 0 ),
 
 
@@ -165,7 +165,7 @@ var MakePages = function(){
     {
 
     title                        : "DISPERSED",
-    titleColor                   : "#000",
+    titleColor                   : "#fff",
 
     pageTurnTime                 : 1000,
 
@@ -181,7 +181,7 @@ var MakePages = function(){
                                    },
 
     targetRotationSimulationUniforms    : {
-                                    speed: 0,
+                                    speed: 0.2,
                                     toTargetAxis:1,
                                     toTargetAngle:0,
                                    },
@@ -191,11 +191,11 @@ var MakePages = function(){
                                     colorValue: 1,
                                     rainbowValue: 0,
                                     brightness:0,
-                                    hueUVSize:8,
+                                    hueUVSize:1,
                                     hueUVValue:1,
                                    },
 
-    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.02 ),
+    cameraPosition               : new THREE.Vector3( 0 , 0 , 0.2 ),
     cameraTarget                 : new THREE.Vector3( 0 , 0 , 0 ),
 
 
