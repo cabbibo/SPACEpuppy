@@ -51,11 +51,18 @@ void main(){
   float rR = 1. + rand( uv * 20. );
 
   vec3 axis = vec3( pos.xyz );
-  axis = normalize( axis );
+
+  if( length( axis )> .000001 ){
+    axis = normalize( axis );
+  }else{
+    axis = vec3( 0 , 1 , 0 );
+  }
 
   axis = mix( axis.xyz , toRot.xyz , toTargetAxis );
 
-  axis = mix( axis , normalize( simVel ) , toVelocity);
+  if( length( simVel) > .0000001 ){
+    axis = mix( axis , normalize( simVel ) , toVelocity);
+  }
 
 
   float angle = pos.w + rR * dT * speed;
