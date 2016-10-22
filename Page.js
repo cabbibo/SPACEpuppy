@@ -121,7 +121,7 @@ Page.prototype.fillUniforms = function( uniformType ){
 
 }
 
-Page.prototype.start = function(){
+Page.prototype.start = function(callback){
   title.innerHTML = "";
 
   turning = true;
@@ -205,10 +205,12 @@ Page.prototype.start = function(){
   }.bind( this ));
 
   tween.onComplete( function(){
+
+    turning = false;
     this.setUniforms( renderUniforms , this.targetRenderUniforms );
 
-    this.onComplete();
-    turning = false;
+    this.onComplete(callback);
+    
   }.bind( this ) );
 
   tween.start();
@@ -219,7 +221,7 @@ Page.prototype.start = function(){
 
 }
 
-Page.prototype.onComplete = function(){
+Page.prototype.onComplete = function(callback){
 
   if( this.title ){
 
@@ -241,7 +243,11 @@ Page.prototype.onComplete = function(){
     stream.play();
   }
 
+  if( callback){ callback(); }
+
   valueNavbar();
+
+
 
 
 }
